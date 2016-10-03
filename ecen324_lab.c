@@ -131,8 +131,9 @@ int main (void)
    printf("\tOct   Dec   Hex   Char\n");
    printf("\t----------------------\n");
    char ch = 'a';
-   for (int i=0;i<26;i+=1) {
-   	printf("\t%-5o %-5d %-5x %-5c\n", ch,ch,ch,ch);
+   int i;
+   for (i=0;i<26;i+=1) {
+    printf("\t%o   %-3d   %x    %c\n", ch, ch, ch, ch);
    	ch+=1;
    }
    printf("\n");
