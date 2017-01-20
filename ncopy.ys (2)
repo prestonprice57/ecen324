@@ -1,0 +1,66 @@
+#/* $begin ncopy-ys */
+##################################################################
+# ncopy.ys - Copy a src block of len words to dst.
+# Return the number of positive words (>0) contained in src.
+#
+# Preston Price
+# price57
+#
+# 1. Moved the irmovq commands to happen before the loop is called
+#    to avoid repetition.
+#    
+#
+##################################################################
+# Do not modify this portion
+# Function prologue.
+# %rdi = src, %rsi = dst, %rdx = len
+ncopy:
+
+##################################################################
+# You can modify this portion
+  # Loop header
+        irmovq $1, %r10
+        subq %r10, %rdx
+        jle Doneish
+        irmovq $2, %r12
+
+Loop:   mrmovq (%rdi), %r9      # read val from src...
+        iaddq $8, %rdi         # src++
+        rmmovq %r9, (%rsi)      # ...and store it to dst
+
+        mrmovq (%rdi), %r8      # read val from src...
+        iaddq $8, %rsi         # dst++
+        rmmovq %r8, (%rsi)      # ...and store it to dst
+
+        andq %r9, %r9
+        jle Check
+        addq %r10, %rax
+
+Check:  andq %r8, %r8
+        jle Npos
+        addq %r10, %rax
+
+Npos:   iaddq $8, %rdi         # src++
+        iaddq $8, %rsi         # dst++
+        subq %r12, %rdx         # len--
+        jg Loop                 # if so, goto Loop:
+
+Doneish:addq %r10, %rdx
+        jle Done
+       
+        mrmovq (%rdi), %r9     # read val from src...
+        andq %r9, %r9
+        rmmovq %r9, (%rsi)     # ...and store it to dst
+        jle Done                # if so, goto Npos:
+        addq %r10, %rax         # count++
+
+
+##################################################################
+# Do not modify the following section of code
+# Function epilogue.
+Done:
+        ret
+##################################################################
+# Keep the following label at the end of your function
+End:
+#/* $end ncopy-ys */

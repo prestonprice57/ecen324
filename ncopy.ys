@@ -1,0 +1,159 @@
+#/* $begin ncopy-ys */
+##################################################################
+# ncopy.ys - Copy a src block of len words to dst.
+# Return the number of positive words (>0) contained in src.
+#
+# Preston Price
+# price57
+#
+# 1. Moved the irmovq commands to happen before the loop is called
+#    to avoid repetition.
+#    
+#
+##################################################################
+# Do not modify this portion
+# Function prologue.
+# %rdi = src, %rsi = dst, %rdx = len
+ncopy:
+
+##################################################################
+# You can modify this portion
+  # Loop header
+        irmovq $1, %r10         # put 1 into %r10
+#        xorq %rax,%rax          # count = 0
+        irmovq $8, %r11         # put 8 into %r11
+        subq %r11, %rdx         # subtract 8 from %rdx
+        jle Skip2                # jump if <= 0
+        irmovq $9, %r14
+
+Loop:   mrmovq (%rdi), %r9      # read val from src... A[i]
+        addq %r11, %rdi         # src++
+        rmmovq %r9, (%rsi)      # ...and store it to dst
+
+        mrmovq (%rdi), %r8      # read val from src... A[i+1]
+        addq %r11, %rsi         # dst++
+        rmmovq %r8, (%rsi)      # ...and store it to dst
+
+        andq %r9, %r9
+        jle Check
+        addq %r10, %rax
+
+Check:  andq %r8, %r8
+        jle Check2
+        addq %r10, %rax
+
+Check2: addq %r11, %rdi         # src++
+        mrmovq (%rdi), %r8      # read val from src... A[i+2]
+        addq %r11, %rsi         # dst++
+        rmmovq %r8, (%rsi)      # ...and store it to dst
+
+        addq %r11, %rdi         # src++
+        mrmovq (%rdi), %r9      # read val from src... A[i+3]
+        addq %r11, %rsi         # dst++
+        rmmovq %r9, (%rsi)      # ...and store it to dst
+
+        andq %r9, %r9
+        jle Check3
+        addq %r10, %rax
+
+Check3:  andq %r8, %r8
+        jle Check4
+        addq %r10, %rax
+
+Check4: addq %r11, %rdi         # src++
+        mrmovq (%rdi), %r8      # read val from src... A[i+2]
+        addq %r11, %rsi         # dst++
+        rmmovq %r8, (%rsi)      # ...and store it to dst
+
+        addq %r11, %rdi         # src++
+        mrmovq (%rdi), %r9      # read val from src... A[i+3]
+        addq %r11, %rsi         # dst++
+        rmmovq %r9, (%rsi)      # ...and store it to dst
+
+        andq %r9, %r9
+        jle Check5
+        addq %r10, %rax
+
+Check5:  andq %r8, %r8
+        jle Check6
+        addq %r10, %rax
+
+Check6: addq %r11, %rdi         # src++
+        mrmovq (%rdi), %r8      # read val from src... A[i+2]
+        addq %r11, %rsi         # dst++
+        rmmovq %r8, (%rsi)      # ...and store it to dst
+
+        addq %r11, %rdi         # src++
+        mrmovq (%rdi), %r9      # read val from src... A[i+3]
+        addq %r11, %rsi         # dst++
+        rmmovq %r9, (%rsi)      # ...and store it to dst
+
+        addq %r11, %rdi         # src++
+        mrmovq (%rdi), %r13      # read val from src... A[i+3]
+        addq %r11, %rsi         # dst++
+        rmmovq %r13, (%rsi)      # ...and store it to dst
+
+        andq %r9, %r9
+        jle Check7
+        addq %r10, %rax
+
+Check7:  andq %r8, %r8
+        jle Check8
+        addq %r10, %rax
+
+Check8: andq %r13, %r13
+        jle Npos
+        addq %r10, %rax
+
+Npos:   addq %r11, %rdi         # src++
+        addq %r11, %rsi         # dst++
+        subq %r14, %rdx         # len-r14
+        jg Loop                 # if so, goto Loop:
+
+Skip2:  addq %r11, %rdx         # subtract 8 from %rdx
+        jle Done                # jump if <= 0
+
+        subq %r10, %rdx         # subtract 8 from %rdx
+        jle Loop2                # jump if <= 0
+        irmovq $2, %r14
+
+Loop3:  mrmovq (%rdi), %r9      # read val from src... A[i]
+        addq %r11, %rdi         # src++ 
+        rmmovq %r9, (%rsi)      # ...and store it to dst
+
+        mrmovq (%rdi), %r8      # read val from src... A[i+1]
+        addq %r11, %rsi         # dst++
+        rmmovq %r8, (%rsi)      # ...and store it to dst
+
+        andq %r9, %r9
+        jle Check9
+        addq %r10, %rax
+
+Check9: andq %r8, %r8
+        jle Npos3
+        addq %r10, %rax
+
+Npos3:  addq %r11, %rdi         # src++
+        addq %r11, %rsi         # dst++
+        subq %r14, %rdx         # len-1
+        jg Loop3                # if so, goto Loop:
+
+
+        addq %r10, %rdx         # subtract 8 from %rdx
+        jle Done                # jump if <= 0
+
+Loop2:  mrmovq (%rdi), %r9     # read val from src...
+        andq %r9, %r9          # val <= 0?
+        rmmovq %r9, (%rsi)     # ...and store it to dst
+        jle Done              # if so, goto Npos:
+        addq %r10, %rax         # count++       
+
+##################################################################
+# Do not modify the following section of code
+# Function epilogue.
+Done:
+        ret
+##################################################################
+# Keep the following label at the end of your function
+End:
+#/* $end ncopy-ys */

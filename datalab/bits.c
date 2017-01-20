@@ -5,7 +5,7 @@
 * Author:
 *    Preston Price
 * Summary:
-*    descriptive text
+*    Using bitwise manipulations to perform certain functions.
 ***********************************************************************/
 
 /* 
@@ -166,7 +166,7 @@ NOTES:
  *   Rating: 1
  */
 int bitNor(int x, int y) {
-    return (~x)&(~y);
+  return (~x) & (~y);
 }
 /* 
  * bitXor - x^y using only ~ and & 
@@ -176,7 +176,8 @@ int bitNor(int x, int y) {
  *   Rating: 2
  */
 int bitXor(int x, int y) {
-   return (~((~x)&(~y)))&(~(x&y));
+  return (~((~x)&(~y)))&(~(x&y));
+
 }
 /* 
  * isNotEqual - return 0 if x == y, and 1 otherwise 
@@ -186,7 +187,7 @@ int bitXor(int x, int y) {
  *   Rating: 2
  */
 int isNotEqual(int x, int y) {
-   return !!(x^y);
+  return !!(x^y);
 }
 /* 
  * getByte - Extract byte n from word x
@@ -196,8 +197,14 @@ int isNotEqual(int x, int y) {
  *   Max ops: 6
  *   Rating: 2
  */
-int getByte(int x, int n) {   
-   return ((x << (24-(n << 3))) >> 24)&255 ;
+int getByte(int x, int n) {
+  int myShift;
+  myShift = n << 3; 
+
+  x = x >> myShift; 
+  x = x & 0x0000FF; 
+
+  return x;  
 }
 /* 
  * copyLSB - set all bits of result to least significant bit of x
@@ -206,8 +213,8 @@ int getByte(int x, int n) {
  *   Max ops: 5
  *   Rating: 2
  */
-int copyLSB(int x) {   
-   return ~(~(x << 31) >> 31);
+int copyLSB(int x) {
+  return ~(~(x << 31) >> 31);
 }
 /* 
  * logicalShift - shift x to the right by n, using a logical shift
@@ -218,7 +225,16 @@ int copyLSB(int x) {
  *   Rating: 3 
  */
 int logicalShift(int x, int n) {
-   return (unsigned) x >> n;
+  int mask1; // create the mask 
+  int result; 
+  
+  mask1 = 0x1 << 31; // shift the mask left 31 bits
+  mask1 = mask1 >> n;        // shift right n times
+  mask1 = ~(mask1 << 1);
+  x = x >> n;         // shift x to align with mask 
+
+  result = (x & mask1); 
+  return result;  
 }
 /*
  * bitCount - returns count of number of 1's in word
@@ -228,7 +244,68 @@ int logicalShift(int x, int n) {
  *   Rating: 4
  */
 int bitCount(int x) {
-  return 2;
+
+  /* Creates five different masks 
+   * mask1 = 0101 0101
+   * mask2 = 0011 0011
+   * mask3 = 0000 1111
+   * mask4 = 0000 0000 1111 1111
+   * mask5 = 0000 0000 0000 0000 1111 1111 111 1111
+   */
+  int mask1; 
+  int mask2; 
+  int mask3; 
+  int mask4; 
+  int mask5; 
+
+  int mask_piece; 
+  int y; 
+  int z; 
+
+  mask_piece = ((0x55 << 8) + 0x55);
+  mask1 = ((mask_piece << 16)) + mask_piece; 
+
+  mask_piece = ((0x33 << 8) + 0x33); 
+  mask2 = ((mask_piece << 16)) + mask_piece; 
+
+  mask_piece = ((0x0F << 8) + 0x0F);
+  mask3 = ((mask_piece << 16)) + mask_piece; 
+
+  mask4 = ((0xFF << 16)) + 0xFF; 
+
+  mask5 = ((0xFF << 8) + 0xFF);
+
+/* Take two temp variables and set them to (x anded with the masks). 
+ * Once before shifting and once after. This allows for the two to be 
+ * added together. Once a number goes through the below masks and shifting
+ * it will return the number of bits. 
+ */
+  y = x & mask1;
+  x = x >> 1; 
+  z = x & mask1; 
+  x = y + z; 
+
+  y = x & mask2; 
+  x = x >> 2; 
+  z = x & mask2; 
+  x = y + z; 
+
+  y = x & mask3; 
+  x = x >> 4; 
+  z =  x & mask3; 
+  x = y + z; 
+
+  y = x & mask4; 
+  x = x >> 8; 
+  z =  x & mask4; 
+  x = y + z; 
+
+  y = x & mask5; 
+  x = x >> 16; 
+  z =  x & mask5; 
+  x = y + z; 
+
+  return x; 
 }
 /* 
  * bang - Compute !x without using !
@@ -238,7 +315,17 @@ int bitCount(int x) {
  *   Rating: 4 
  */
 int bang(int x) {
-   return ((unsigned) (~(-x))&(~x)) >> 31;
+
+  int x_inverted; 
+  int x_add_one = 0;
+  int invert_result = 0;  
+
+  x_inverted = ~x;
+  x_add_one = x_inverted + 1;
+
+  invert_result = ((~x_add_one & x_inverted) >> 31);
+
+    return (invert_result & 1);
 }
 /* 
  * leastBitPos - return a mask that marks the position of the
@@ -249,7 +336,13 @@ int bang(int x) {
  *   Rating: 4 
  */
 int leastBitPos(int x) {
-  return 2;
+  /* By  taking two complement of x we can then use it to 
+   * give us the leastBitPos. i.e. 0101, flip the bits and 1
+   * this will give us 1011, we then (and) the original value(x) by 
+   * the two's complement of x. */
+  int y = 0; 
+  y = (~x + 1);
+  return x & y;
 }
 /* 
  * TMax - return maximum two's complement integer 
@@ -258,7 +351,7 @@ int leastBitPos(int x) {
  *   Rating: 1
  */
 int tmax(void) {
-   return ~ (1 << 31);
+  return ~ (1 << 31); 
 }
 /* 
  * isNonNegative - return 1 if x >= 0, return 0 otherwise 
@@ -268,7 +361,7 @@ int tmax(void) {
  *   Rating: 3
  */
 int isNonNegative(int x) {
-   return !(x >> 31)&1;
+  return !(x >> 31)&1; 
 }
 /* 
  * isGreater - if x > y  then return 1, else return 0 
@@ -278,13 +371,11 @@ int isNonNegative(int x) {
  *   Rating: 3
  */
 int isGreater(int x, int y) {
-   /*int a = x|y;
-   int b = a&x;
-   return b;*/
+  int negXor = (~(x ^ y));
+  int subt = (y + (~x + 1));
+  int greaterThan = (y & (x ^ y));  
 
-   int z = -y;
-
-   return ((unsigned) ~(x+z)) >> 31;
+  return !!(((negXor & subt) | greaterThan) >> 31);
 }
 /* 
  * divpwr2 - Compute x/(2^n), for 0 <= n <= 30
@@ -295,7 +386,16 @@ int isGreater(int x, int y) {
  *   Rating: 2
  */
 int divpwr2(int x, int n) {
-    return x >> n;
+  int val_is_neg; 
+  int ifNeg; 
+  int ifPos; 
+  
+  val_is_neg = x >> 31; 
+
+  ifNeg = val_is_neg & (x + (1 << n) + ~0) >> n;
+  ifPos = (~val_is_neg & x) >> n;
+
+    return ifNeg + ifPos; 
 }
 /* 
  * abs - absolute value of x (except returns TMin for TMin)
@@ -305,7 +405,17 @@ int divpwr2(int x, int n) {
  *   Rating: 4
  */
 int abs(int x) {
-  return 2;
+  /* First check if x is neg, then if so convert to positive 
+   * if already positive return the orginal
+   */
+
+   int isNegValue;
+   int value; 
+
+   isNegValue = x >> 31; 
+  
+   value = ((x & ~isNegValue) + (isNegValue & (~x + 1)));
+   return value;
 }
 /* 
  * addOK - Determine if can compute x+y without overflow
@@ -316,5 +426,18 @@ int abs(int x) {
  *   Rating: 3
  */
 int addOK(int x, int y) {
-  return 2;
+
+  int a = x >> 31; 
+  int b = y >> 31; 
+  
+  int xaddy = x + y;
+  int Xor; 
+  xaddy = xaddy >> 31; 
+  Xor = !!(a ^ b);
+
+
+  return (Xor | (!(b ^ xaddy) & !(a ^ xaddy)));
+
+  //return !!(~(y & x));
+
 }
